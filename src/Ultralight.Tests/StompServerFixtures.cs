@@ -61,10 +61,16 @@ namespace Ultralight.Tests
 
         private MockClient GetASubscribedClient(string queue)
         {
+            return GetASubscribedClient(queue, string.Empty);
+        }
+
+        private MockClient GetASubscribedClient(string queue, string subscriptionId)
+        {
             var client = GetAConnectedClient();
 
             var message = new StompMessage("SUBSCRIBE");
             message["destination"] = queue;
+            message["id"] = subscriptionId;
 
             client.OnMessage(message);
 
@@ -202,9 +208,9 @@ namespace Ultralight.Tests
             var client2 = GetASubscribedClient("/test");
 
             int cnt = 0;
-            client1.OnServerMessage = msg => { if (msg.Command == "MESSAGE" && msg.Body == "my body") cnt++; };
-            client2.OnServerMessage = msg => { if (msg.Command == "MESSAGE" && msg.Body == "my body") cnt++; };
-
+            client1.OnServerMessage = msg => { if (msg.Command == "MESSAGE" && msg.Body == "my body" && msg["destination"] == "/test") cnt++; };
+            client2.OnServerMessage = msg => { if (msg.Command == "MESSAGE" && msg.Body == "my body" && msg["destination"] == "/test") cnt++; };
+                
             var message = new StompMessage("SEND","my body");
             message["destination"] = "/test";
             client1.OnMessage(message);
@@ -229,6 +235,29 @@ namespace Ultralight.Tests
             Assert.NotNull(r);
             Assert.AreEqual(r.Command, "ERROR");
             Assert.AreEqual(r.Body, "You are not subscribed to queue '/test2'");
+        }
+        
+        [Test]
+        public void WhenClientIncludedAnIdOnSubscription_TheIdShouldBeInTheMessageResponse()
+        {
+            var client1 = GetASubscribedClient("/test", "123");
+            var client2 = GetASubscribedClient("/test", "456");
+
+            var message = new StompMessage("SEND");
+            message["destination"] = "/test";
+
+            StompMessage r1 = null;
+            client1.OnServerMessage += m => r1 = m;
+            StompMessage r2 = null;
+            client2.OnServerMessage += m => r2 = m;
+
+            client1.OnMessage(message);
+
+            Assert.AreEqual(r1.Command, "MESSAGE");
+            Assert.AreEqual(r1["subscription"], "123");
+
+            Assert.AreEqual(r2.Command, "MESSAGE");
+            Assert.AreEqual(r2["subscription"], "456");            
         }
     }
 }

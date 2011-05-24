@@ -31,7 +31,7 @@ namespace Ultralight.Tests
         {
             var q = new StompQueue(string.Empty);
             var mockClient = new MockClient();
-            q.AddClient(mockClient);
+            q.AddClient(mockClient, string.Empty);
 
             Assert.That(q.Clients.Contains(mockClient));
         }
@@ -41,8 +41,8 @@ namespace Ultralight.Tests
         {
             var q = new StompQueue(string.Empty);
             var mockClient = new MockClient();
-            q.AddClient(mockClient);
-            q.AddClient(mockClient);
+            q.AddClient(mockClient, string.Empty);
+            q.AddClient(mockClient, string.Empty);
 
             Assert.That(q.Clients.Contains(mockClient));
             Assert.AreEqual(q.Clients.Length, 1);
@@ -54,7 +54,7 @@ namespace Ultralight.Tests
             var q = new StompQueue(string.Empty);
             var mockClient = new MockClient();
             mockClient.OnClose += () => { };
-            q.AddClient(mockClient);
+            q.AddClient(mockClient, string.Empty);
 
             Assert.AreEqual(mockClient.OnClose.GetInvocationList().Length, 2);
         }
@@ -65,7 +65,7 @@ namespace Ultralight.Tests
             var q = new StompQueue(string.Empty);
             var mockClient = new MockClient();
             mockClient.OnClose += () => { };
-            q.AddClient(mockClient);
+            q.AddClient(mockClient, string.Empty);
 
             Assert.That(q.Clients.Contains(mockClient));
 
@@ -80,7 +80,7 @@ namespace Ultralight.Tests
         {
             var q = new StompQueue(string.Empty);
             var mockClient = new MockClient();
-            q.AddClient(mockClient);
+            q.AddClient(mockClient, string.Empty);
 
             var fired = false;
             q.OnLastClientRemoved += x => fired = true;
@@ -98,7 +98,7 @@ namespace Ultralight.Tests
             var q = new StompQueue("/queue/test");
             var mockClient = new MockClient();
 
-            q.AddClient(mockClient);
+            q.AddClient(mockClient, string.Empty);
             Assert.IsNotEmpty(q.Clients);
 
             mockClient.OnClose();

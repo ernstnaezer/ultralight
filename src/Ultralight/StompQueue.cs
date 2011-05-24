@@ -22,8 +22,14 @@ namespace Ultralight
     /// </summary>
     public class StompQueue
     {
-        private readonly ConcurrentDictionary<IStompClient, Action> _clients =
-            new ConcurrentDictionary<IStompClient, Action>();
+        private class SubscriptionMetadata
+        {
+            public string Id { get; set; }
+            public Action OnCloseHandler { get; set; }
+        }
+
+        private readonly ConcurrentDictionary<IStompClient, SubscriptionMetadata> _clients =
+            new ConcurrentDictionary<IStompClient, SubscriptionMetadata>();
 
         /// <summary>
         ///   Initializes a new instance of the <see cref = "StompQueue" /> class.
@@ -60,16 +66,18 @@ namespace Ultralight
         }
 
         /// <summary>
-        ///   Adds the client.
+        /// Adds the client.
         /// </summary>
-        /// <param name = "client">The client.</param>
-        public void AddClient(IStompClient client)
+        /// <param name="client">The client.</param>
+        /// <param name="subscriptionId">The subscription id.</param>
+        public void AddClient(IStompClient client, string subscriptionId)
         {
             if (_clients.ContainsKey(client)) return;
 
             Action onClose = () => RemoveClient(client);
             client.OnClose += onClose;
-            _clients.TryAdd(client, onClose);
+
+            _clients.TryAdd(client, new SubscriptionMetadata {Id = subscriptionId, OnCloseHandler = onClose});
         }
 
         /// <summary>
@@ -80,9 +88,9 @@ namespace Ultralight
         {
             if (!_clients.ContainsKey(client)) return;
 
-            Action onClose;
-            if (_clients.TryRemove(client, out onClose))
-                client.OnClose -= onClose;
+            SubscriptionMetadata meta;
+            if (_clients.TryRemove(client, out meta))
+                if (meta.OnCloseHandler != null) client.OnClose -= meta.OnCloseHandler;
 
             // raise the last client removed event if needed
             if (_clients.Count() == 0 && OnLastClientRemoved != null)
@@ -95,12 +103,16 @@ namespace Ultralight
         /// <param name = "message">The message.</param>
         public void Publish(string message)
         {
-            var envelope = new StompMessage("MESSAGE", message);
-            envelope["message-id"] = Guid.NewGuid().ToString();
-
-            foreach (var client in _clients.Keys)
+            foreach (var client in _clients)
             {
-                client.Send(envelope);
+                var response = new StompMessage("MESSAGE", message);
+                response["message-id"] = Guid.NewGuid().ToString();
+                response["destination"] = Address;
+                
+                if( !string.IsNullOrEmpty(client.Value.Id))
+                    response["subscription"] = client.Value.Id;
+                
+                client.Key.Send(response);
             }
         }
     }

@@ -42,5 +42,17 @@ namespace Ultralight.Tests
             Assert.AreEqual(msg["destination"], "/my/queue");
             Assert.AreEqual(msg["foo"], "bar");
         }
+
+        [Test]
+        public void MalformedHeaderShouldBeIgnored()
+        {
+            var msg = new StompMessageSerializer().Deserialize("CONNECT\ndestination:/my/queue\nfoo\n\nlorum!\0");
+
+            Assert.IsNotNull(msg);
+            Assert.AreEqual(msg.Command, "CONNECT");
+            Assert.AreEqual(msg.Body, "lorum!");
+            Assert.AreEqual(msg.Headers.Count, 1);
+            Assert.AreEqual(msg["destination"], "/my/queue");
+        }
     }
 }

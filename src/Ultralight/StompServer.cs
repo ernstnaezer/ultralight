@@ -60,7 +60,7 @@ namespace Ultralight
         public void Start()
         {
             // attach to listener events
-            _listener.OnConnect = client =>
+            _listener.OnConnect += client =>
                                       {
                                           client.OnMessage += msg => OnClientMessage(client, msg);
                                           client.OnClose += () => client.OnClose = null;
@@ -134,7 +134,7 @@ namespace Ultralight
                 }
             }
 
-            queue.AddClient(client);
+            queue.AddClient(client, message["id"]);
         }
 
         /// <summary>
@@ -146,8 +146,8 @@ namespace Ultralight
         {
             string destination = message["destination"];
 
+            if (string.IsNullOrEmpty(destination)) return;
             var queue = _queues.FirstOrDefault(q => q.Address == destination);
-
             if (queue == null || queue.Clients.Contains(client) == false)
             {
                 client.Send(new StompMessage("ERROR", "You are not subscribed to queue '" + destination + "'"));

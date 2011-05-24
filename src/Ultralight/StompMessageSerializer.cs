@@ -65,8 +65,7 @@ namespace Ultralight
             while (!string.IsNullOrEmpty(header))
             {
                 string[] split = header.Split(':');
-                if (split.Length < 2) throw new Exception("Malformed header: " + header);
-                headers[split[0].Trim()] = split[1].Trim();
+                if (split.Length == 2) headers[split[0].Trim()] = split[1].Trim();
                 header = reader.ReadLine() ?? string.Empty;
             }
 
