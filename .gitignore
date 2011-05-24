@@ -1,0 +1,8 @@
+
+*.user
+*.suo
+/_ReSharper.Ultralight
+/src/Ultralight/bin
+/src/Ultralight/obj
+/src/Ultralight.Tests/bin
+/src/Ultralight.Tests/obj
