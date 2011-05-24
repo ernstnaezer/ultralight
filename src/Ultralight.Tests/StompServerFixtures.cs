@@ -219,22 +219,24 @@ namespace Ultralight.Tests
         }
 
         [Test]
-        public void WhenASubscribedClientSendsAMessageToANonSubscribedQueue_AnErrorShouldBeReturned()
+        public void WhenASubscribedClientSendsAMessageToANonSubscribedQueue_TheMessageShouldBePublished()
         {
+            var unsubscribedClient = GetAConnectedClient();
             var client = GetASubscribedClient("/test");
 
-            var message = new StompMessage("SEND");
-            message["destination"] = "/test2";
+            var message = new StompMessage("SEND","Hi, you don't know me but...");
+            message["destination"] = "/test";
 
             StompMessage r = null;
             client.OnServerMessage += m => r = m;
-            client.OnMessage(message);
+
+            unsubscribedClient.OnMessage(message);
 
             Assert.That(_server.Queues.First().Clients.Contains(client));
 
             Assert.NotNull(r);
-            Assert.AreEqual(r.Command, "ERROR");
-            Assert.AreEqual(r.Body, "You are not subscribed to queue '/test2'");
+            Assert.AreEqual(r.Command, "MESSAGE");
+            Assert.AreEqual(r.Body, "Hi, you don't know me but...");
         }
         
         [Test]

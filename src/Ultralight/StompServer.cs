@@ -169,10 +169,7 @@ namespace Ultralight
             var queue = _queues.FirstOrDefault(s => s.Address == destination);
 
             if (queue == null)
-            {
-                client.Send(new StompMessage("ERROR", "You are not subscribed to queue '" + destination + "'"));
                 return;
-            }
 
             queue.Publish(message.Body);
         }
