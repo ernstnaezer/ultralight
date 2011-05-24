@@ -30,6 +30,11 @@ Protocol details
 ================
 For more information about stomp see the [codehause project](http://stomp.codehaus.org/Protocol)
 
+Credits
+================
+
+Websockets are provided by [Fleck](https://github.com/statianzo/Fleck)
+The code is loosly based on [acid stomp](https://github.com/danielbenzvi/acidstomp)
 
 License
 -------
@@ -46,4 +51,3 @@ under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 CONDITIONS OF ANY KIND, either express or implied. See the License for the 
 specific language governing permissions and limitations under the License.
 
-The code is loosly based on [acid stomp](https://github.com/danielbenzvi/acidstomp)
