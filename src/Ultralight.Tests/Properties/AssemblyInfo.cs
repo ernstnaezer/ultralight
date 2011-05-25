@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Ultralight.Tests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Wincor Nixdorf")]
+[assembly: AssemblyCompany("Ultralight")]
 [assembly: AssemblyProduct("Ultralight.Tests")]
-[assembly: AssemblyCopyright("Copyright © Wincor Nixdorf 2011")]
+[assembly: AssemblyCopyright("Copyright © Ernst Naezer 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
