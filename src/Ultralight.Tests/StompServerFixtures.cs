@@ -261,5 +261,23 @@ namespace Ultralight.Tests
             Assert.AreEqual(r2.Command, "MESSAGE");
             Assert.AreEqual(r2["subscription"], "456");            
         }
+
+        [Test]
+        public void WhenRequestingAReceipt_AReceiptFrameShouldBeReturned()
+        {
+            var client = GetAConnectedClient();
+
+            var message = new StompMessage("SUBSCRIBE");
+            message["destination"] = "/test";
+            message["receipt"] = "message-12345";
+
+            StompMessage r = null;
+            client.OnServerMessage += x => r = x;
+            client.OnMessage(message);
+
+            Assert.IsNotNull(r);
+            Assert.AreEqual(r.Command,"RECEIPT");
+            Assert.AreEqual(r["receipt-id"], "message-12345");
+        }
     }
 }

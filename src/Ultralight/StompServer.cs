@@ -85,6 +85,12 @@ namespace Ultralight
             }
 
             _actions[message.Command](client, message);
+
+            // when a receipt is request, we send a receipt frame
+            if (message.Command == "CONNECT" || message["receipt"] == string.Empty) return;
+            var response = new StompMessage("RECEIPT");
+            response["receipt-id"] = message["receipt"];
+            client.Send(response);
         }
 
         /// <summary>

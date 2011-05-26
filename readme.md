@@ -18,8 +18,9 @@ The server can return with
 
 * MESSAGE
 * ERROR
+* RECEIPT
 
-Transactions, receipts and ack commands are currently unsupported. Also wildcards in queues are ignored.
+Transactions and ack commands are currently unsupported. Also wildcards in queues are ignored.
 
 Sample
 ======
