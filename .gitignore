@@ -8,3 +8,5 @@
 /src/Ultralight.Tests/obj
 /Example/server/bin
 /Example/server/obj
+/src/Ultralight.Client/bin
+/src/Ultralight.Client/obj

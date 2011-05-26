@@ -5,7 +5,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ultralight", "src\Ultraligh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ultralight.Tests", "src\Ultralight.Tests\Ultralight.Tests.csproj", "{6EF5D09C-EC20-4AB6-8573-FF05305963B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Example\server\server.csproj", "{ECFAD635-F7C1-46DD-B31B-E98267A76267}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server", "Example\server\server.csproj", "{ECFAD635-F7C1-46DD-B31B-E98267A76267}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ultralight.Client", "src\Ultralight.Client\Ultralight.Client.csproj", "{2F2B8FEF-4AF4-4313-BAC5-CF38686B3101}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +49,16 @@ Global
 		{ECFAD635-F7C1-46DD-B31B-E98267A76267}.Release|Mixed Platforms.Build.0 = Release|x86
 		{ECFAD635-F7C1-46DD-B31B-E98267A76267}.Release|x86.ActiveCfg = Release|x86
 		{ECFAD635-F7C1-46DD-B31B-E98267A76267}.Release|x86.Build.0 = Release|x86
+		{2F2B8FEF-4AF4-4313-BAC5-CF38686B3101}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F2B8FEF-4AF4-4313-BAC5-CF38686B3101}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F2B8FEF-4AF4-4313-BAC5-CF38686B3101}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{2F2B8FEF-4AF4-4313-BAC5-CF38686B3101}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{2F2B8FEF-4AF4-4313-BAC5-CF38686B3101}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2F2B8FEF-4AF4-4313-BAC5-CF38686B3101}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F2B8FEF-4AF4-4313-BAC5-CF38686B3101}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F2B8FEF-4AF4-4313-BAC5-CF38686B3101}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{2F2B8FEF-4AF4-4313-BAC5-CF38686B3101}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{2F2B8FEF-4AF4-4313-BAC5-CF38686B3101}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

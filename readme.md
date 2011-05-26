@@ -26,6 +26,9 @@ Sample
 ======
 Check out the Example folder, a both a server and an HTML web client written by [Jeff Mesnil](https://github.com/jmesnil/stomp-websocket) are included.
 
+Client
+======
+Next to the included Javascript browser client, there is a very light c# client.
 
 Protocol details
 ================
