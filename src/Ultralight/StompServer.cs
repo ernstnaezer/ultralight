@@ -76,6 +76,8 @@ namespace Ultralight
         /// <param name = "message"></param>
         private void OnClientMessage(IStompClient client, StompMessage message)
         {
+            if ( message == null || message.Command == null) return;
+            
             if (!_actions.ContainsKey(message.Command)) return;
 
             if (message.Command != "CONNECT" && client.IsConnected() == false)

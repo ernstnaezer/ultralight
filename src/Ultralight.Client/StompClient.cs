@@ -120,6 +120,7 @@
 
         private void HandleMessage(StompMessage message)
         {
+            if (message == null || message.Command == null) return;
             if (!_actions.ContainsKey(message.Command)) return;
 
             _actions[message.Command](message);
