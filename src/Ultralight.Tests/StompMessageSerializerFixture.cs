@@ -27,7 +27,7 @@ namespace Ultralight.Tests
 
             string r = new StompMessageSerializer().Serialize(msg);
 
-            Assert.AreEqual(r, "CONNECT\ndestination:/my/queue\nfoo:bar\n\nlorum!\0");
+            Assert.AreEqual(r, "CONNECT\ncontent-length:6\ndestination:/my/queue\nfoo:bar\n\nlorum!\0");
         }
 
         [Test]
@@ -36,11 +36,12 @@ namespace Ultralight.Tests
             var msg = new StompMessageSerializer().Deserialize("CONNECT\ndestination:/my/queue\nfoo:  bar  \n\nlorum!\0");
 
             Assert.IsNotNull(msg);
-            Assert.AreEqual(msg.Command, "CONNECT");
-            Assert.AreEqual(msg.Body, "lorum!");
-            Assert.AreEqual(msg.Headers.Count, 2);
-            Assert.AreEqual(msg["destination"], "/my/queue");
-            Assert.AreEqual(msg["foo"], "bar");
+            Assert.AreEqual("CONNECT", msg.Command);
+            Assert.AreEqual("lorum!", msg.Body);
+            Assert.AreEqual(3, msg.Headers.Count);
+            Assert.AreEqual("/my/queue", msg["destination"]);
+            Assert.AreEqual("bar", msg["foo"]);
+            Assert.AreEqual("6", msg["content-length"]);
         }
 
         [Test]
@@ -49,10 +50,11 @@ namespace Ultralight.Tests
             var msg = new StompMessageSerializer().Deserialize("CONNECT\ndestination:/my/queue\nfoo\n\nlorum!\0");
 
             Assert.IsNotNull(msg);
-            Assert.AreEqual(msg.Command, "CONNECT");
-            Assert.AreEqual(msg.Body, "lorum!");
-            Assert.AreEqual(msg.Headers.Count, 1);
-            Assert.AreEqual(msg["destination"], "/my/queue");
+            Assert.AreEqual("CONNECT", msg.Command);
+            Assert.AreEqual("lorum!", msg.Body);
+            Assert.AreEqual(2, msg.Headers.Count);
+            Assert.AreEqual("/my/queue", msg["destination"]);
+            Assert.AreEqual("6", msg["content-length"]);
         }
     }
 }

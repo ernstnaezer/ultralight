@@ -40,7 +40,7 @@ namespace Ultralight
                     buffer.Append(header.Key + ":" + header.Value + "\n");
                 }
             }
-
+             
             buffer.Append("\n");
             buffer.Append(message.Body);
             buffer.Append('\0');

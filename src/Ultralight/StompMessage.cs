@@ -51,6 +51,8 @@ namespace Ultralight
             Command = command;
             Body = body;
             _headers = headers;
+
+            this["content-length"] = body.Length.ToString();
         }
 
         public Dictionary<string, string> Headers
