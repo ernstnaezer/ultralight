@@ -78,7 +78,7 @@ namespace Ultralight.Tests
         }
 
         [Test]
-        public void WhenAClientSubscribsToANonExistingQueue_TheQueueShouldBeCreatedAndTheClientShouldBeAdded()
+        public void WhenAClientSubscribesToANonExistingQueue_TheQueueShouldBeCreatedAndTheClientShouldBeAdded()
         {
             var client = GetAConnectedClient();
 
@@ -95,7 +95,7 @@ namespace Ultralight.Tests
         }
 
         [Test]
-        public void WhenAClientSubscribsToAnExistingQueue_TheClientShouldBeAdded()
+        public void WhenAClientSubscribesToAnExistingQueue_TheClientShouldBeAdded()
         {
             var client1 = GetASubscribedClient("/test");
             var client2 = GetASubscribedClient("/test");
@@ -105,7 +105,7 @@ namespace Ultralight.Tests
         }
 
         [Test]
-        public void WhenAClientUnSubscribs_TheClientShouldBeRemovedFromTheQueue()
+        public void WhenAClientUnSubscribes_TheClientShouldBeRemovedFromTheQueue()
         {
             var client1 = GetASubscribedClient("/test");
             var client2 = GetASubscribedClient("/test");
@@ -119,7 +119,7 @@ namespace Ultralight.Tests
         }
         
         [Test]
-        public void WhenAClientUnSubscribsFromAnInValidQueue_AnErrorShouldBeReturned()
+        public void WhenAClientUnSubscribesFromAnInValidQueue_AnErrorShouldBeReturned()
         {
             var client = GetASubscribedClient("/test");
 
@@ -278,6 +278,20 @@ namespace Ultralight.Tests
             Assert.IsNotNull(r);
             Assert.AreEqual(r.Command,"RECEIPT");
             Assert.AreEqual(r["receipt-id"], "message-12345");
+        }
+
+        [Test]
+        public void WhenClosingTheServer_ConnectedClientsShouldBeDisconnected_StopListenerShouldBeCalled()
+        {
+            var client = GetASubscribedClient("/test", "123");
+
+            var called = false;
+            client.OnClose += () => { called = true; };
+
+            _server.Stop();
+
+            Assert.IsTrue(called);
+            Assert.IsTrue(_listener.StopCalled);
         }
     }
 }

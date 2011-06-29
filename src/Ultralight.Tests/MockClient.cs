@@ -15,9 +15,6 @@ namespace Ultralight.Tests
 {
     using System;
 
-    /// <summary>
-    /// 
-    /// </summary>
     public class MockClient : IStompClient
     {
         /// <summary>
@@ -48,6 +45,14 @@ namespace Ultralight.Tests
         {
             if (OnServerMessage != null)
                 OnServerMessage(message);
+        }
+
+        /// <summary>
+        /// Closes this instance.
+        /// </summary>
+        public void Close()
+        {
+            OnClose();
         }
     }
 }

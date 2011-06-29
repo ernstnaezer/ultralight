@@ -23,6 +23,11 @@ namespace Ultralight
         void Start();
 
         /// <summary>
+        ///   Stops this instance.
+        /// </summary>
+        void Stop();
+
+        /// <summary>
         ///   A new client connected
         /// </summary>
         Action<IStompClient> OnConnect { get; set; }

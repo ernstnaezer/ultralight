@@ -45,6 +45,16 @@ namespace Ultralight.Listeners
         public Guid SessionId { get; set; }
 
         /// <summary>
+        ///   A message from the client is received
+        /// </summary>
+        public Action<StompMessage> OnMessage { get; set; }
+
+        /// <summary>
+        ///   The client disconnected
+        /// </summary>
+        public Action OnClose { get; set; }
+
+        /// <summary>
         ///   Sends a message to the client
         /// </summary>
         /// <param name = "message"></param>
@@ -54,14 +64,12 @@ namespace Ultralight.Listeners
         }
 
         /// <summary>
-        ///   A message from the client is received
+        /// Closes this instance.
         /// </summary>
-        public Action<StompMessage> OnMessage { get; set; }
-
-        /// <summary>
-        ///   The client disconnected
-        /// </summary>
-        public Action OnClose { get; set; }
+        public void Close()
+        {
+            _socket.Close();
+        }
 
         #endregion
     }

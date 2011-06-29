@@ -17,11 +17,21 @@ namespace Ultralight.Tests
 
     public class MockListener : IStompListener
     {
+        public bool StopCalled { get; set; }
+
         /// <summary>
         ///   Start the listener
         /// </summary>
         public void Start()
         {
+        }
+
+        /// <summary>
+        /// Stops this instance.
+        /// </summary>
+        public void Stop()
+        {
+            StopCalled = true;
         }
 
         /// <summary>

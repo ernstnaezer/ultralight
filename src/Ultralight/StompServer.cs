@@ -55,7 +55,7 @@ namespace Ultralight
         }
 
         /// <summary>
-        ///   Starts this server instance.
+        ///   Starts this instance.
         /// </summary>
         public void Start()
         {
@@ -67,6 +67,16 @@ namespace Ultralight
                                       };
 
             _listener.Start();
+        }
+
+        /// <summary>
+        /// Stops this instance.
+        /// </summary>
+        public void Stop()
+        {
+            _queues.ForEach(queue => queue.Clients.ToList().ForEach(client => client.Close()));
+            _queues.Clear();
+            _listener.Stop();
         }
 
         /// <summary>

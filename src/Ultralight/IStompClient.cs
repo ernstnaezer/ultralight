@@ -37,5 +37,10 @@ namespace Ultralight
         /// </summary>
         /// <param name = "message"></param>
         void Send(StompMessage message);
+
+        /// <summary>
+        /// Closes this instance.
+        /// </summary>
+        void Close();
     }
 }

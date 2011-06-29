@@ -42,6 +42,11 @@ namespace Ultralight.Listeners
             _server.Start(socket => socket.OnOpen = () => OnConnect(new StompWsClient(socket)));
         }
 
+        public void Stop()
+        {
+            _server.Dispose();
+        }
+
         /// <summary>
         /// A new client connected
         /// </summary>
