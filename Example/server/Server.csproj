@@ -47,6 +47,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Ultralight.Client\Ultralight.Client.csproj">
+      <Project>{2F2B8FEF-4AF4-4313-BAC5-CF38686B3101}</Project>
+      <Name>Ultralight.Client</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Ultralight\Ultralight.csproj">
       <Project>{F8DE7AD1-BE3F-4A29-9F25-E86D496221EC}</Project>
       <Name>Ultralight</Name>
