@@ -27,9 +27,7 @@ namespace Ultralight
         /// <returns>A serialized version of the given <see cref="StompMessage"/></returns>
         public string Serialize(StompMessage message)
         {
-            var buffer =
-                new StringBuilder((message.Body != null ? message.Body.Length : 0) + message.Command.Length +
-                                  (message.Headers != null ? message.Headers.Count*32 : 0) + 100);
+            var buffer = new StringBuilder();
 
             buffer.Append(message.Command + "\n");
 
