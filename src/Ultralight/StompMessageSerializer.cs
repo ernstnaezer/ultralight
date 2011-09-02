@@ -55,19 +55,19 @@ namespace Ultralight
         {
             var reader = new StringReader(message);
 
-            string command = reader.ReadLine();
+            var command = reader.ReadLine();
 
             var headers = new Dictionary<string, string>();
 
-            string header = reader.ReadLine();
+            var header = reader.ReadLine();
             while (!string.IsNullOrEmpty(header))
             {
-                string[] split = header.Split(':');
-                if (split.Length == 2) headers[split[0].Trim()] = split[1].Trim();
+                var split = header.Split(':');
+                if (split.Length == 2) headers[split[0].Trim()] = split[1];
                 header = reader.ReadLine() ?? string.Empty;
             }
 
-            string body = reader.ReadToEnd() ?? string.Empty;
+            var body = reader.ReadToEnd() ?? string.Empty;
             body = body.TrimEnd('\r', '\n', '\0');
 
             return new StompMessage(command, body, headers);
