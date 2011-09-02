@@ -1,44 +1,47 @@
 Ultralight
 ==========
+Ultralight is a small and fast, but partial, STOMP 1.0 message broker and client written in C#. 
 
-Ultralight is a small and fast STOMP message broker written in C# / .net 4.0. Out of the box it handles websockets connections 
-but other transport protocols can easily be added by implementing both *IStompListener* and *IStompClient*.
+Transports
+----------
+Out of the box Ultralight communicates via websockets. Other transport protocols can easily be added by implementing both the *IStompListener* and *IStompClient* interfaces and registering them at startup.
 
-Supported command
------------------
-
-Currently Ultralight support the following STOMP commands:
+Supported commands
+------------------
+Currently Ultralight support a subset of the STOMP 1.0 commands:
 
 * CONNECT
 * SUBSCRIBE		(id is supported)
 * UNSUBSCRIBE	(id is unsupported)
 * SEND
 
-The server can return with
+The server can return with:
 
 * MESSAGE
 * ERROR
 * RECEIPT
 
-Transactions and ack commands are currently unsupported. Also wildcards in queues are ignored.
+Transactions and ack commands are currently unsupported. Wildcards in queues names are ignored, they are treated as string values.
 
 Sample
 ======
 Check out the Example folder, a both a server and an HTML web client written by [Jeff Mesnil](https://github.com/jmesnil/stomp-websocket) are included.
 
-Client
-======
-Next to the included Javascript browser client, there is a very light c# client.
+When you start the server a new 'hello there' message is queued to demonstrate message buffering. The first chat client that connects receives this message, subsequent clients won't.
 
 Protocol details
 ================
-For more information about stomp see the [codehause project](http://stomp.codehaus.org/Protocol)
+For more information about STOMP see:
+
+* [STOMP at Github.com](http://stomp.github.com/)
+* [1.0 protocol definitions](http://stomp.github.com/stomp-specification-1.0.html)
+* [codehause project](http://stomp.codehaus.org/Protocol)
 
 Credits
-================
-
-Websockets are provided by [Fleck](https://github.com/statianzo/Fleck)
-The code is loosly based on [acid stomp](https://github.com/danielbenzvi/acidstomp)
+=======
+* Websockets are provided by [Fleck](https://github.com/statianzo/Fleck)
+* The code is loosly based on [acid stomp](https://github.com/danielbenzvi/acidstomp)
+* The libraty uses the concurrent collections and it depends on the .net 4.x runtime.
 
 License
 -------
