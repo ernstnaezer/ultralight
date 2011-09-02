@@ -50,37 +50,10 @@ namespace Ultralight.Tests
             Assert.IsTrue(client.IsConnected());
         }
 
-        private MockClient GetAConnectedClient()
-        {
-            var client = new MockClient();
-            _listener.OnConnect(client);
-            client.OnMessage(new StompMessage("CONNECT"));
-
-            return client;
-        }
-
-        private MockClient GetASubscribedClient(string queue)
-        {
-            return GetASubscribedClient(queue, string.Empty);
-        }
-
-        private MockClient GetASubscribedClient(string queue, string subscriptionId)
-        {
-            var client = GetAConnectedClient();
-
-            var message = new StompMessage("SUBSCRIBE");
-            message["destination"] = queue;
-            message["id"] = subscriptionId;
-
-            client.OnMessage(message);
-
-            return client;
-        }
-
         [Test]
         public void WhenAClientSubscribesToANonExistingQueue_TheQueueShouldBeCreatedAndTheClientShouldBeAdded()
         {
-            var client = GetAConnectedClient();
+            var client = _listener.GetAConnectedClient();
 
             var message = new StompMessage("SUBSCRIBE");
             message["destination"] = "/queue/test";
@@ -97,8 +70,8 @@ namespace Ultralight.Tests
         [Test]
         public void WhenAClientSubscribesToAnExistingQueue_TheClientShouldBeAdded()
         {
-            var client1 = GetASubscribedClient("/test");
-            var client2 = GetASubscribedClient("/test");
+            var client1 = _listener.GetASubscribedClient("/test");
+            var client2 = _listener.GetASubscribedClient("/test");
 
             Assert.That(_server.Queues.First().Clients.Contains(client1));
             Assert.That(_server.Queues.First().Clients.Contains(client2));
@@ -107,8 +80,8 @@ namespace Ultralight.Tests
         [Test]
         public void WhenAClientUnSubscribes_TheClientShouldBeRemovedFromTheQueue()
         {
-            var client1 = GetASubscribedClient("/test");
-            var client2 = GetASubscribedClient("/test");
+            var client1 = _listener.GetASubscribedClient("/test");
+            var client2 = _listener.GetASubscribedClient("/test");
 
             var message = new StompMessage("UNSUBSCRIBE");
             message["destination"] = "/test";
@@ -121,7 +94,7 @@ namespace Ultralight.Tests
         [Test]
         public void WhenAClientUnSubscribesFromAnInValidQueue_AnErrorShouldBeReturned()
         {
-            var client = GetASubscribedClient("/test");
+            var client = _listener.GetASubscribedClient("/test");
 
             var message = new StompMessage("UNSUBSCRIBE");
             message["destination"] = "/test2";
@@ -140,7 +113,7 @@ namespace Ultralight.Tests
         [Test]
         public void WhenTheLastClientUnSubscribs_TheQueueShouldBeRemoved()
         {
-            var client = GetASubscribedClient("/test");
+            var client = _listener.GetASubscribedClient("/test");
 
             Assert.IsNotEmpty(_server.Queues);
 
@@ -154,7 +127,7 @@ namespace Ultralight.Tests
         [Test]
         public void WhenAClientDisconnects_ItsEventHandlersShouldBeCleared()
         {
-            var client = GetAConnectedClient();
+            var client = _listener.GetAConnectedClient();
             
             Assert.IsNotNull(client.OnClose);
 
@@ -166,7 +139,7 @@ namespace Ultralight.Tests
         [Test]
         public void WhenASubscribedClientDisconnects_ItsEventHandlersShouldBeClearedAndItShouldBeRemovedFromTheQueue()
         {
-            var client = GetASubscribedClient("/test");
+            var client = _listener.GetASubscribedClient("/test");
 
             Assert.IsNotEmpty(_server.Queues);
 
@@ -204,8 +177,8 @@ namespace Ultralight.Tests
         [Test]
         public void WhenASubscribedClientSendsAMessage_ItShouldBePublishedToAllTheClienstInTheQueue()
         {
-            var client1 = GetASubscribedClient("/test");
-            var client2 = GetASubscribedClient("/test");
+            var client1 = _listener.GetASubscribedClient("/test");
+            var client2 = _listener.GetASubscribedClient("/test");
 
             int cnt = 0;
             client1.OnServerMessage = msg => { if (msg.Command == "MESSAGE" && msg.Body == "my body" && msg["destination"] == "/test") cnt++; };
@@ -221,8 +194,8 @@ namespace Ultralight.Tests
         [Test]
         public void WhenASubscribedClientSendsAMessageToANonSubscribedQueue_TheMessageShouldBePublished()
         {
-            var unsubscribedClient = GetAConnectedClient();
-            var client = GetASubscribedClient("/test");
+            var unsubscribedClient = _listener.GetAConnectedClient();
+            var client = _listener.GetASubscribedClient("/test");
 
             var message = new StompMessage("SEND","Hi, you don't know me but...");
             message["destination"] = "/test";
@@ -242,8 +215,8 @@ namespace Ultralight.Tests
         [Test]
         public void WhenClientIncludedAnIdOnSubscription_TheIdShouldBeInTheMessageResponse()
         {
-            var client1 = GetASubscribedClient("/test", "123");
-            var client2 = GetASubscribedClient("/test", "456");
+            var client1 = _listener.GetASubscribedClient("/test", "123");
+            var client2 = _listener.GetASubscribedClient("/test", "456");
 
             var message = new StompMessage("SEND");
             message["destination"] = "/test";
@@ -265,7 +238,7 @@ namespace Ultralight.Tests
         [Test]
         public void WhenRequestingAReceipt_AReceiptFrameShouldBeReturned()
         {
-            var client = GetAConnectedClient();
+            var client = _listener.GetAConnectedClient();
 
             var message = new StompMessage("SUBSCRIBE");
             message["destination"] = "/test";
@@ -283,7 +256,7 @@ namespace Ultralight.Tests
         [Test]
         public void WhenClosingTheServer_ConnectedClientsShouldBeDisconnected_StopListenerShouldBeCalled()
         {
-            var client = GetASubscribedClient("/test", "123");
+            var client = _listener.GetASubscribedClient("/test", "123");
 
             var called = false;
             client.OnClose += () => { called = true; };

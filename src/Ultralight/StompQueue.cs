@@ -18,7 +18,7 @@ namespace Ultralight
     using System.Linq;
 
     /// <summary>
-    /// Stomp message queue
+    ///   Stomp message queue
     /// </summary>
     public class StompQueue
     {
@@ -30,6 +30,9 @@ namespace Ultralight
 
         private readonly ConcurrentDictionary<IStompClient, SubscriptionMetadata> _clients =
             new ConcurrentDictionary<IStompClient, SubscriptionMetadata>();
+
+        private readonly ConcurrentQueue<string> _queuedMessages =
+            new ConcurrentQueue<string>();
 
         /// <summary>
         ///   Initializes a new instance of the <see cref = "StompQueue" /> class.
@@ -48,12 +51,11 @@ namespace Ultralight
         /// </summary>
         public string Address { get; private set; }
 
-
         /// <summary>
-        /// Triggered when the last client got removed.
+        ///   Triggered when the last client got removed.
         /// </summary>
         /// <value>
-        /// The on no more clients.
+        ///   The on no more clients.
         /// </value>
         public Action<StompQueue> OnLastClientRemoved { get; set; }
 
@@ -66,16 +68,36 @@ namespace Ultralight
         }
 
         /// <summary>
-        /// Adds the client.
+        ///   Gets the queued messages.
         /// </summary>
-        /// <param name="client">The client.</param>
-        /// <param name="subscriptionId">The subscription id.</param>
+        public string[] QueuedMessages
+        {
+            get { return _queuedMessages.ToArray(); }
+        }
+
+        /// <summary>
+        ///   Adds the client.
+        /// </summary>
+        /// <param name = "client">The client.</param>
+        /// <param name = "subscriptionId">The subscription id.</param>
         public void AddClient(IStompClient client, string subscriptionId)
         {
             if (_clients.ContainsKey(client)) return;
 
             Action onClose = () => RemoveClient(client);
             client.OnClose += onClose;
+
+            if (_clients.IsEmpty && _queuedMessages.IsEmpty == false)
+            {
+                do
+                {
+                    string body;
+                    if (_queuedMessages.TryDequeue(out body))
+                    {
+                        SendMessage(client, body, Guid.NewGuid(), subscriptionId);
+                    }
+                } while (_queuedMessages.IsEmpty == false);
+            }
 
             _clients.TryAdd(client, new SubscriptionMetadata {Id = subscriptionId, OnCloseHandler = onClose});
         }
@@ -103,17 +125,33 @@ namespace Ultralight
         /// <param name = "message">The message.</param>
         public void Publish(string message)
         {
+            if (_clients.IsEmpty)
+            {
+                _queuedMessages.Enqueue(message);
+                return;
+            }
+
+            var messageId = Guid.NewGuid();
             foreach (var client in _clients)
             {
-                var response = new StompMessage("MESSAGE", message);
-                response["message-id"] = Guid.NewGuid().ToString();
-                response["destination"] = Address;
-                
-                if( !string.IsNullOrEmpty(client.Value.Id))
-                    response["subscription"] = client.Value.Id;
-                
-                client.Key.Send(response);
+                var stompClient = client.Key;
+                var metadata = client.Value;
+                SendMessage(stompClient, message, messageId, metadata.Id);
             }
+        }
+
+        private void SendMessage(IStompClient client, string body, Guid messageId, string subscriptionId)
+        {
+            var stompMessage = new StompMessage("MESSAGE", body);
+            stompMessage["message-id"] = messageId.ToString();
+            stompMessage["destination"] = Address;
+
+            if (!string.IsNullOrEmpty(subscriptionId))
+            {
+                stompMessage["subscription"] = subscriptionId;
+            }
+
+            client.Send(stompMessage);
         }
     }
 }

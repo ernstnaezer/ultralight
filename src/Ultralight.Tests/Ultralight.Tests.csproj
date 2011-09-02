@@ -46,12 +46,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MockClientExtensionMethods.cs" />
+    <Compile Include="MessageFixtures.cs" />
     <Compile Include="MockClient.cs" />
     <Compile Include="MockListener.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StompMessageSerializerFixture.cs" />
     <Compile Include="StompServerFixtures.cs" />
     <Compile Include="StompQueueFixtures.cs" />
+    <Compile Include="TestHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ultralight\Ultralight.csproj">

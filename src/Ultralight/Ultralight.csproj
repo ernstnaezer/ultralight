@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientExtensions.cs" />
     <Compile Include="IStompClient.cs" />
     <Compile Include="IStompListener.cs" />
     <Compile Include="Listeners\StompWsClient.cs" />

@@ -129,28 +129,7 @@ namespace Ultralight
         {
             string destination = message["destination"];
 
-            var queue = _queues.FirstOrDefault(s => s.Address == destination);
-
-            if (queue == null)
-            {
-                queue = new StompQueue(destination)
-                            {
-                                OnLastClientRemoved =
-                                    q =>
-                                        {
-                                            q.OnLastClientRemoved = null;
-                                            lock (this)
-                                            {
-                                                _queues.Remove(q);
-                                            }
-                                        }
-                            };
-
-                lock (this)
-                {
-                    _queues.Add(queue);
-                }
-            }
+            var queue = _queues.FirstOrDefault(s => s.Address == destination) ?? AddNewQueue(destination);
 
             queue.AddClient(client, message["id"]);
         }
@@ -182,14 +161,39 @@ namespace Ultralight
         /// <param name="message">The message.</param>
         private void OnStompSend(IStompClient client, StompMessage message)
         {
-            string destination = message["destination"];
+            var destination = message["destination"];
 
-            var queue = _queues.FirstOrDefault(s => s.Address == destination);
-
-            if (queue == null)
-                return;
+            var queue = _queues.FirstOrDefault(s => s.Address == destination) ?? AddNewQueue(destination);
 
             queue.Publish(message.Body);
         }
+
+        /// <summary>
+        /// Adds the new queue.
+        /// </summary>
+        /// <param name="destination">The queue name.</param>
+        /// <returns></returns>
+        private StompQueue AddNewQueue(string destination)
+        {
+            var queue = new StompQueue(destination)
+            {
+                OnLastClientRemoved =
+                    q =>
+                    {
+                        q.OnLastClientRemoved = null;
+                        lock (this)
+                        {
+                            _queues.Remove(q);
+                        }
+                    }
+            };
+
+            lock (this)
+            {
+                _queues.Add(queue);
+            }
+            return queue;
+        }
+
     }
 }
