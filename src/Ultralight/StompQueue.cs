@@ -87,16 +87,19 @@ namespace Ultralight
             Action onClose = () => RemoveClient(client);
             client.OnClose += onClose;
 
-            if (_clients.IsEmpty && _queuedMessages.IsEmpty == false)
+            lock (_queuedMessages)
             {
-                do
+                if (_clients.IsEmpty && _queuedMessages.IsEmpty == false)
                 {
-                    string body;
-                    if (_queuedMessages.TryDequeue(out body))
+                    do
                     {
-                        SendMessage(client, body, Guid.NewGuid(), subscriptionId);
-                    }
-                } while (_queuedMessages.IsEmpty == false);
+                        string body;
+                        if (_queuedMessages.TryDequeue(out body))
+                        {
+                            SendMessage(client, body, Guid.NewGuid(), subscriptionId);
+                        }
+                    } while (_queuedMessages.IsEmpty == false);
+                }
             }
 
             _clients.TryAdd(client, new SubscriptionMetadata {Id = subscriptionId, OnCloseHandler = onClose});
