@@ -63,7 +63,7 @@ namespace Ultralight
             while (!string.IsNullOrEmpty(header))
             {
                 var split = header.Split(':');
-                if (split.Length == 2) headers[split[0].Trim()] = split[1];
+                if (split.Length == 2) headers[split[0].Trim()] = split[1].Trim();
                 header = reader.ReadLine() ?? string.Empty;
             }
 
