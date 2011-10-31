@@ -33,7 +33,11 @@ namespace Ultralight.Listeners
             if (socket == null) throw new ArgumentNullException("socket");
             _socket = socket;
 
-            socket.OnClose = () => OnClose();
+            socket.OnClose = () =>
+                                 {
+                                     if (OnClose != null) OnClose();
+                                 };
+            
             socket.OnMessage = message => OnMessage(_messageSerializer.Deserialize(message));
         }
 
