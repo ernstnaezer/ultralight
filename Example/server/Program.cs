@@ -16,9 +16,7 @@
                 += stompClient =>
                        {
                            Console.WriteLine("a new client connected!");
-                           stompClient.OnMessage +=
-                               msg =>
-                               Console.Out.WriteLine("msg received: {0} {1}", msg.Command, msg.Body);
+                           stompClient.OnMessage += msg => Console.Out.WriteLine("msg received: {0} {1}", msg.Command, msg.Body);
                        };
 
             var server = new StompServer(wsListener);
