@@ -40,7 +40,7 @@ namespace Ultralight.Tests
             Assert.AreEqual("lorum!", msg.Body);
             Assert.AreEqual(3, msg.Headers.Count);
             Assert.AreEqual("/my/queue", msg["destination"]);
-            Assert.AreEqual("  bar  ", msg["foo"]);             // in STOMP 1.1 header values must not be trimmed or padded
+            Assert.AreEqual("bar", msg["foo"]);
             Assert.AreEqual("6", msg["content-length"]);
         }       
        
