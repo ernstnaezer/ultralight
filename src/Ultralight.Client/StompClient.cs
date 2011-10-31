@@ -14,6 +14,7 @@
 namespace Ultralight.Client
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using WebSocketSharp;
 
@@ -25,13 +26,22 @@ namespace Ultralight.Client
         private readonly IDictionary<string, Action<StompMessage>> _messageConsumers;
         private readonly Queue<Action> _commandQueue = new Queue<Action>();
         private readonly StompMessageSerializer _serializer = new StompMessageSerializer();
-
+        private readonly ConcurrentQueue<StompMessage> _messages = new ConcurrentQueue<StompMessage>();
         private WebSocket _sock;
-        
+
         /// <summary>
         ///   Initializes a new instance of the <see cref = "StompClient" /> class.
         /// </summary>
-        public StompClient()
+        public StompClient() 
+            : this(false)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StompClient"/> class.
+        /// </summary>
+        /// <param name="cacheMessages">if set to <c>true</c> messages will be copied into <see cref="StompClient.Messages"/>.</param>
+        public StompClient(bool cacheMessages)
         {
             _messageConsumers = new Dictionary<string, Action<StompMessage>>
                                     {
@@ -40,6 +50,9 @@ namespace Ultralight.Client
                                         {"ERROR", msg => { if (OnError != null) OnError(msg); }},
                                         {"CONNECTED", OnStompConnected},
                                     };
+
+            if (cacheMessages)
+                OnMessage += msg => _messages.Enqueue(msg);
         }
 
         public Action<StompMessage> OnMessage { get; set; }
@@ -53,6 +66,11 @@ namespace Ultralight.Client
         ///   <c>true</c> if connected; otherwise, <c>false</c>.
         /// </value>
         public bool IsConnected { get; private set; }
+
+        public ConcurrentQueue<StompMessage> Messages
+        {
+            get { return _messages; }
+        }
 
         /// <summary>
         ///   Connects to the server on the specified address.
