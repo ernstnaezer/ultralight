@@ -14,8 +14,10 @@
 namespace Ultralight.Tests
 {
     using System;
+    using Listeners;
 
-    public class MockClient : IStompClient
+    public class MockClient 
+        : IStompClient
     {
         /// <summary>
         /// The client disconnected
@@ -53,6 +55,29 @@ namespace Ultralight.Tests
         public void Close()
         {
             OnClose();
+        }
+
+        public int CompareTo(IStompClient other)
+        {
+            return SessionId.CompareTo(other.SessionId);
+        }
+
+        public bool Equals(MockClient other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            return ReferenceEquals(this, other) || other.SessionId.Equals(SessionId);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            return obj.GetType() == typeof (MockClient) && Equals((MockClient) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return SessionId.GetHashCode();
         }
     }
 }

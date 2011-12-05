@@ -3,14 +3,15 @@
     using System;
     using Ultralight;
     using Ultralight.Client;
+    using Ultralight.Client.Transport;
     using Ultralight.Listeners;
 
     internal class Program
     {
         private static void Main(string[] args)
         {
-            var address = new Uri("ws://localhost:8181/");
-            var wsListener = new StompWsListener(address);
+            const string address = "ws://localhost:8181/";
+            var wsListener = new StompWebsocketListener(address);
 
             wsListener.OnConnect
                 += stompClient =>
@@ -22,8 +23,8 @@
             var server = new StompServer(wsListener);
             server.Start();
 
-            var client = new StompClient();
-            client.Connect(address);
+            var client = new StompClient(new WebTransportTransport(address));
+            client.Connect();
             client.Send("/queue/test", "hi there. you are the first to connect");
 
             Console.Out.WriteLine("Press [Enter] to stop the server");

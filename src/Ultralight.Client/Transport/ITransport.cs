@@ -1,4 +1,4 @@
-// Copyright 2011 Ernst Naezer, et. al.
+﻿// Copyright 2011 Ernst Naezer, et. al.
 //  
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not use 
 // this file except in compliance with the License. You may obtain a copy of the 
@@ -11,25 +11,17 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the 
 // specific language governing permissions and limitations under the License.
 
-namespace Ultralight
+namespace Ultralight.Client.Transport
 {
     using System;
 
-    public interface IStompListener
+    public interface ITransport
     {
-        /// <summary>
-        ///   Start the listener
-        /// </summary>
-        void Start();
+        Action OnOpen { get;  set; }
+        Action<string> OnMessage { get; set; }
 
-        /// <summary>
-        ///   Stops this instance.
-        /// </summary>
-        void Stop();
-
-        /// <summary>
-        ///   A new client connected
-        /// </summary>
-        Action<IStompClient> OnConnect { get; set; }
+        void Connect();
+        void Send(string message);
+        void Close();
     }
 }

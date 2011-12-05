@@ -17,29 +17,37 @@ namespace Ultralight.Listeners
     using Fleck;
 
     /// <summary>
-    /// Listens to a websocket for incomming clients
+    ///   Listens to a websocket for incomming clients
     /// </summary>
-    public class StompWsListener : IStompListener
+    public class StompWebsocketListener
+        : IStompListener
     {
         private readonly WebSocketServer _server;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="StompWsListener"/> class.
+        ///   Initializes a new instance of the <see cref = "StompWebsocketListener" /> class.
         /// </summary>
-        /// <param name="address">The address.</param>
-        public StompWsListener(Uri address)
+        /// <param name = "address">The address.</param>
+        public StompWebsocketListener(string address)
         {
-            _server = new WebSocketServer(address.ToString());
+            _server = new WebSocketServer(address);
         }
 
         #region IStompListener Members
 
         /// <summary>
-        /// Start the listener
+        ///   Start the listener
         /// </summary>
         public void Start()
         {
-            _server.Start(socket => socket.OnOpen = () => OnConnect(new StompWsClient(socket)));
+            _server.Start(socket =>
+                              {
+                                  socket.OnOpen = () =>
+                                                      {
+                                                          if (OnConnect != null)
+                                                              OnConnect(new StompWebsocketClient(socket));
+                                                      };
+                              });
         }
 
         public void Stop()
@@ -48,7 +56,7 @@ namespace Ultralight.Listeners
         }
 
         /// <summary>
-        /// A new client connected
+        ///   A new client connected
         /// </summary>
         public Action<IStompClient> OnConnect { get; set; }
 

@@ -16,12 +16,18 @@ namespace Ultralight
     using System;
     using System.Collections.Concurrent;
     using System.Linq;
+    using System.Reflection;
+    using Listeners;
+    using MessageStore;
+    using log4net;
 
     /// <summary>
     ///   Stomp message queue
     /// </summary>
     public class StompQueue
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         private class SubscriptionMetadata
         {
             public string Id { get; set; }
@@ -31,19 +37,20 @@ namespace Ultralight
         private readonly ConcurrentDictionary<IStompClient, SubscriptionMetadata> _clients =
             new ConcurrentDictionary<IStompClient, SubscriptionMetadata>();
 
-        private readonly ConcurrentQueue<string> _queuedMessages =
-            new ConcurrentQueue<string>();
+        public IMessageStore Store { get; private set; }
 
         /// <summary>
         ///   Initializes a new instance of the <see cref = "StompQueue" /> class.
         /// </summary>
         /// <param name = "address">The address.</param>
-        public StompQueue(string address)
+        /// <param name = "store">The message store.</param>
+        public StompQueue(string address, IMessageStore store)
         {
             if (address == null) throw new ArgumentNullException("address");
             if (!address.StartsWith("/")) address = string.Format("/{0}", address);
 
             Address = address;
+            Store = store;
         }
 
         /// <summary>
@@ -68,38 +75,33 @@ namespace Ultralight
         }
 
         /// <summary>
-        ///   Gets the queued messages.
-        /// </summary>
-        public string[] QueuedMessages
-        {
-            get { return _queuedMessages.ToArray(); }
-        }
-
-        /// <summary>
         ///   Adds the client.
         /// </summary>
         /// <param name = "client">The client.</param>
         /// <param name = "subscriptionId">The subscription id.</param>
         public void AddClient(IStompClient client, string subscriptionId)
         {
-            if (_clients.ContainsKey(client)) return;
+            Log.Info(string.Format("Adding client: {0}", client.SessionId));
+
+            if (_clients.ContainsKey(client))
+            {
+                Log.Info(string.Format("Duplicate client found: {0}", client.SessionId));
+                return;
+            }
 
             Action onClose = () => RemoveClient(client);
             client.OnClose += onClose;
 
-            lock (_queuedMessages)
+            if (_clients.IsEmpty)
             {
-                if (_clients.IsEmpty && _queuedMessages.IsEmpty == false)
+                do
                 {
-                    do
+                    string body;
+                    if (Store.TryDequeue(out body))
                     {
-                        string body;
-                        if (_queuedMessages.TryDequeue(out body))
-                        {
-                            SendMessage(client, body, Guid.NewGuid(), subscriptionId);
-                        }
-                    } while (_queuedMessages.IsEmpty == false);
-                }
+                        SendMessage(client, body, Guid.NewGuid(), subscriptionId);
+                    }
+                } while (Store.HasMessages());
             }
 
             _clients.TryAdd(client, new SubscriptionMetadata {Id = subscriptionId, OnCloseHandler = onClose});
@@ -111,7 +113,13 @@ namespace Ultralight
         /// <param name = "client">The client.</param>
         public void RemoveClient(IStompClient client)
         {
-            if (!_clients.ContainsKey(client)) return;
+            Log.Info(string.Format("Removing client {0}", client.SessionId));
+
+            if (!_clients.ContainsKey(client))
+            {
+                Log.Info(string.Format("Client to remove not found {0}", client.SessionId));
+                return;
+            }
 
             SubscriptionMetadata meta;
             if (_clients.TryRemove(client, out meta))
@@ -130,7 +138,7 @@ namespace Ultralight
         {
             if (_clients.IsEmpty)
             {
-                _queuedMessages.Enqueue(message);
+                Store.Enqueue(message);
                 return;
             }
 
@@ -145,6 +153,8 @@ namespace Ultralight
 
         private void SendMessage(IStompClient client, string body, Guid messageId, string subscriptionId)
         {
+            Log.Info(string.Format("Sending message to {0}", client.SessionId));
+
             var stompMessage = new StompMessage("MESSAGE", body);
             stompMessage["message-id"] = messageId.ToString();
             stompMessage["destination"] = Address;

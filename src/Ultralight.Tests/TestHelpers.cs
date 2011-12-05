@@ -13,6 +13,9 @@
 
 namespace Ultralight.Tests
 {
+    using Listeners;
+    using Server;
+
     public static class TestHelpers
     {
         public static MockClient GetAConnectedClient(this IStompListener listener)

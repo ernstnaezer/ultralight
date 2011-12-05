@@ -11,7 +11,8 @@
     <RootNamespace>Ultralight</RootNamespace>
     <AssemblyName>Ultralight</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -40,6 +41,9 @@
     <Reference Include="Fleck">
       <HintPath>..\..\libs\Fleck.dll</HintPath>
     </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\..\libs\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -50,17 +54,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClientExtensions.cs" />
-    <Compile Include="IStompClient.cs" />
-    <Compile Include="IStompListener.cs" />
-    <Compile Include="Listeners\StompWsClient.cs" />
-    <Compile Include="Listeners\StompWsListener.cs" />
+    <Compile Include="Listeners\StompInMemoryClient.cs" />
+    <Compile Include="Listeners\IStompClient.cs" />
+    <Compile Include="Listeners\IStompListener.cs" />
+    <Compile Include="Listeners\StompInMemoryListener.cs" />
+    <Compile Include="Listeners\StompWebsocketClient.cs" />
+    <Compile Include="Listeners\StompWebsocketListener.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="MessageStore\InMemoryMessageStore.cs" />
     <Compile Include="StompClientExtensionMethods.cs" />
     <Compile Include="StompMessage.cs" />
     <Compile Include="StompQueue.cs" />
     <Compile Include="StompMessageSerializer.cs" />
     <Compile Include="StompServer.cs" />
+    <Compile Include="MessageStore\IMessageStore.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

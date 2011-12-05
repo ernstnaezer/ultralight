@@ -14,35 +14,28 @@
 namespace Ultralight.Client
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
-    using WebSocketSharp;
+    using Transport;
 
     /// <summary>
     ///   Ultra simple STOMP client with command buffering support
     /// </summary>
-    public class StompClient : IDisposable
+    public class StompClient
+        : IDisposable
     {
         private readonly IDictionary<string, Action<StompMessage>> _messageConsumers;
         private readonly Queue<Action> _commandQueue = new Queue<Action>();
         private readonly StompMessageSerializer _serializer = new StompMessageSerializer();
-        private readonly ConcurrentQueue<StompMessage> _messages = new ConcurrentQueue<StompMessage>();
-        private WebSocket _sock;
+
+        private readonly ITransport _transport;
 
         /// <summary>
         ///   Initializes a new instance of the <see cref = "StompClient" /> class.
         /// </summary>
-        public StompClient() 
-            : this(false)
+        /// <param name = "transport">The transport channel.</param>
+        public StompClient(ITransport transport)
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="StompClient"/> class.
-        /// </summary>
-        /// <param name="cacheMessages">if set to <c>true</c> messages will be copied into <see cref="StompClient.Messages"/>.</param>
-        public StompClient(bool cacheMessages)
-        {
+            _transport = transport;
             _messageConsumers = new Dictionary<string, Action<StompMessage>>
                                     {
                                         {"MESSAGE", msg => { if (OnMessage != null) OnMessage(msg); }},
@@ -50,9 +43,6 @@ namespace Ultralight.Client
                                         {"ERROR", msg => { if (OnError != null) OnError(msg); }},
                                         {"CONNECTED", OnStompConnected},
                                     };
-
-            if (cacheMessages)
-                OnMessage += msg => _messages.Enqueue(msg);
         }
 
         public Action<StompMessage> OnMessage { get; set; }
@@ -60,29 +50,22 @@ namespace Ultralight.Client
         public Action<StompMessage> OnError { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether this <see cref="StompClient"/> is connected.
+        ///   Gets a value indicating whether this <see cref = "StompClient" /> is connected.
         /// </summary>
         /// <value>
         ///   <c>true</c> if connected; otherwise, <c>false</c>.
         /// </value>
         public bool IsConnected { get; private set; }
 
-        public ConcurrentQueue<StompMessage> Messages
-        {
-            get { return _messages; }
-        }
-
         /// <summary>
         ///   Connects to the server on the specified address.
         /// </summary>
         /// <param name = "address">The address.</param>
-        public void Connect(Uri address)
+        public void Connect()
         {
-            _sock = new WebSocket(address.ToString());
-            _sock.OnOpen += (o, e) => _sock.Send(_serializer.Serialize(new StompMessage("CONNECT")));
-            _sock.OnMessage += (o, s) => HandleMessage(_serializer.Deserialize(s));
-
-            _sock.Connect();
+            _transport.OnOpen += () => _transport.Send(_serializer.Serialize(new StompMessage("CONNECT")));
+            _transport.OnMessage += (msg) => HandleMessage(_serializer.Deserialize(msg));
+            _transport.Connect();
         }
 
         /// <summary>
@@ -94,10 +77,11 @@ namespace Ultralight.Client
                 () =>
                     {
                         var msg = new StompMessage("DISCONNECT");
-                        _sock.Send(_serializer.Serialize(msg));
+                        _transport.Send(_serializer.Serialize(msg));
+
+                        _transport.Close();
 
                         IsConnected = false;
-                        _sock.Close();
                     });
         }
 
@@ -131,7 +115,7 @@ namespace Ultralight.Client
                         if (!string.IsNullOrEmpty(receiptId))
                             msg["receipt"] = receiptId;
 
-                        _sock.Send(_serializer.Serialize(msg));
+                        _transport.Send(_serializer.Serialize(msg));
                     });
         }
 
@@ -146,7 +130,7 @@ namespace Ultralight.Client
                     {
                         var msg = new StompMessage("SUBSCRIBE");
                         msg["destination"] = destination;
-                        _sock.Send(_serializer.Serialize(msg));
+                        _transport.Send(_serializer.Serialize(msg));
                     });
         }
 
@@ -161,7 +145,7 @@ namespace Ultralight.Client
                     {
                         var msg = new StompMessage("UNSUBSCRIBE");
                         msg["destination"] = destination;
-                        _sock.Send(_serializer.Serialize(msg));
+                        _transport.Send(_serializer.Serialize(msg));
                     });
         }
 
@@ -210,18 +194,15 @@ namespace Ultralight.Client
         }
 
         /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        ///   Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public void Dispose()
         {
-            if (_sock == null) return;
-
-            if(IsConnected)
+            if (IsConnected)
             {
                 Disconnect();
             }
 
-            _sock = null;
             _commandQueue.Clear();
         }
     }

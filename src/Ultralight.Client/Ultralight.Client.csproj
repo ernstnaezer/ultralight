@@ -45,6 +45,9 @@
   <ItemGroup>
     <Compile Include="StompClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Transport\InMemoryTransport.cs" />
+    <Compile Include="Transport\ITransport.cs" />
+    <Compile Include="Transport\WebTransportTransport.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ultralight\Ultralight.csproj">

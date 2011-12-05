@@ -11,34 +11,25 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the 
 // specific language governing permissions and limitations under the License.
 
-namespace Ultralight.Tests
+namespace Ultralight.Listeners
 {
     using System;
-    using Listeners;
 
-    public class MockListener 
-        : IStompListener
+    public interface IStompListener
     {
-        public bool StopCalled { get; set; }
-
         /// <summary>
         ///   Start the listener
         /// </summary>
-        public void Start()
-        {
-        }
+        void Start();
 
         /// <summary>
-        /// Stops this instance.
+        ///   Stops this instance.
         /// </summary>
-        public void Stop()
-        {
-            StopCalled = true;
-        }
+        void Stop();
 
         /// <summary>
         ///   A new client connected
         /// </summary>
-        public Action<IStompClient> OnConnect { get; set; }
+        Action<IStompClient> OnConnect { get; set; }
     }
 }

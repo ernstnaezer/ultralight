@@ -16,26 +16,38 @@ namespace Ultralight
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
+    using Listeners;
+    using MessageStore;
+    using log4net;
 
     /// <summary>
     ///   A small and light STOMP message broker
     /// </summary>
     public class StompServer
     {
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private readonly IDictionary<string, Action<IStompClient, StompMessage>> _actions;
-
-        private readonly IStompListener _listener;
-
+        private readonly List<IStompListener> _listener = new List<IStompListener>();
         private readonly List<StompQueue> _queues = new List<StompQueue>();
 
+        private Func<IMessageStore> _messageStoreBuilder = () => new InMemoryMessageStore();
+
+        public void SetMessageStore<T>()
+            where T : IMessageStore, new()
+        {
+            _messageStoreBuilder = () => new T();
+        }
+
         /// <summary>
-        ///   Initializes a new instance of the <see cref = "StompServer" /> class.
+        /// Initializes a new instance of the <see cref="StompServer"/> class.
         /// </summary>
-        /// <param name = "listener">The listener.</param>
-        public StompServer(IStompListener listener)
+        /// <param name="listener">The listener.</param>
+        /// <param name="messageStoreType">Type of the message store.</param>
+        public StompServer(params IStompListener[] listener)
         {
             if (listener == null) throw new ArgumentNullException("listener");
-            _listener = listener;
+            _listener.AddRange(listener);
 
             _actions = new Dictionary<string, Action<IStompClient, StompMessage>>
                            {
@@ -43,6 +55,7 @@ namespace Ultralight
                                {"SUBSCRIBE", OnStompSubscribe},
                                {"UNSUBSCRIBE", OnStompUnsubscribe},
                                {"SEND", OnStompSend},
+                               {"DISCONNECT", OnStompDisconnect},
                            };
         }
 
@@ -59,14 +72,18 @@ namespace Ultralight
         /// </summary>
         public void Start()
         {
-            // attach to listener events
-            _listener.OnConnect += client =>
-                                      {
-                                          client.OnMessage += msg => OnClientMessage(client, msg);
-                                          client.OnClose += () => client.OnClose = null;
-                                      };
+            _listener.ForEach(
+                l =>
+                    {
+                        // attach to listener events
+                        l.OnConnect += client =>
+                                           {
+                                               client.OnMessage += msg => OnClientMessage(client, msg);
+                                               client.OnClose += () => client.OnClose = null;
+                                           };
 
-            _listener.Start();
+                        l.Start();
+                    });
         }
 
         /// <summary>
@@ -76,7 +93,7 @@ namespace Ultralight
         {
             _queues.ForEach(queue => queue.Clients.ToList().ForEach(client => client.Close()));
             _queues.Clear();
-            _listener.Stop();
+            _listener.ForEach(l => l.Stop());
         }
 
         /// <summary>
@@ -87,11 +104,19 @@ namespace Ultralight
         private void OnClientMessage(IStompClient client, StompMessage message)
         {
             if ( message == null || message.Command == null) return;
+
+            Log.Info(string.Format("Processing command: {0} from client {1}", message.Command, client.SessionId));
             
-            if (!_actions.ContainsKey(message.Command)) return;
+            if (!_actions.ContainsKey(message.Command))
+            {
+                Log.Warn( string.Format("Client {0} sended an unknown command: {1}", client.SessionId, message.Command));
+                return;
+            }
 
             if (message.Command != "CONNECT" && client.IsConnected() == false)
             {
+                Log.Info(string.Format("Client {0} was not connected before sending command: {1}", client.SessionId, message.Command));
+
                 client.Send(new StompMessage("ERROR", "Please connect before sending '" + message.Command + "'"));
                 return;
             }
@@ -169,13 +194,24 @@ namespace Ultralight
         }
 
         /// <summary>
+        /// Handles the DISCONNECT message
+        /// </summary>
+        /// <param name="client">The client.</param>
+        /// <param name="message">The message.</param>
+        public void OnStompDisconnect(IStompClient client, StompMessage message)
+        {
+            var stompQueues = _queues.Where(q => q.Clients.Contains(client)).ToList();
+            stompQueues.ForEach(q => q.RemoveClient(client));
+        }
+
+        /// <summary>
         /// Adds the new queue.
         /// </summary>
         /// <param name="destination">The queue name.</param>
         /// <returns></returns>
         private StompQueue AddNewQueue(string destination)
         {
-            var queue = new StompQueue(destination)
+            var queue = new StompQueue(destination, _messageStoreBuilder())
             {
                 OnLastClientRemoved =
                     q =>

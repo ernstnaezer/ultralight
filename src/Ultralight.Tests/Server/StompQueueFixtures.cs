@@ -11,25 +11,31 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the 
 // specific language governing permissions and limitations under the License.
 
-namespace Ultralight.Tests
+namespace Ultralight.Tests.Server
 {
     using System.Linq;
+    using MessageStore;
     using NUnit.Framework;
 
     [TestFixture]
     public class StompQueueFixtures
     {
+        private static StompQueue GetStompQueue(string address)
+        {
+            return new StompQueue(address, new InMemoryMessageStore());
+        }
+
         [Test]
         public void AddressShouldAlwaysStartWithASlash()
         {
-            var q = new StompQueue("queue/test");
+            var q = GetStompQueue("queue/test");
             Assert.AreEqual(q.Address,"/queue/test");
         }
 
         [Test]
         public void AddingAClient_ShouldAddTheClientToTheClientList()
         {
-            var q = new StompQueue(string.Empty);
+            var q = GetStompQueue(string.Empty);
             var mockClient = new MockClient();
             q.AddClient(mockClient, string.Empty);
 
@@ -39,7 +45,7 @@ namespace Ultralight.Tests
         [Test]
         public void AddingAClientTwice_ShouldAddTheClientToTheClientListOnce()
         {
-            var q = new StompQueue(string.Empty);
+            var q = GetStompQueue(string.Empty);
             var mockClient = new MockClient();
             q.AddClient(mockClient, string.Empty);
             q.AddClient(mockClient, string.Empty);
@@ -51,7 +57,7 @@ namespace Ultralight.Tests
         [Test]
         public void AddingAClient_ShouldSubscribeToTheOnCloseAction()
         {
-            var q = new StompQueue(string.Empty);
+            var q = GetStompQueue(string.Empty);
             var mockClient = new MockClient();
             mockClient.OnClose += () => { };
             q.AddClient(mockClient, string.Empty);
@@ -62,7 +68,7 @@ namespace Ultralight.Tests
         [Test]
         public void RemovingAAClient_ShouldRemoveTheClientFromTheClientListAndUnsubscribeFromTheOnCloseEvent()
         {
-            var q = new StompQueue(string.Empty);
+            var q = GetStompQueue(string.Empty);
             var mockClient = new MockClient();
             mockClient.OnClose += () => { };
             q.AddClient(mockClient, string.Empty);
@@ -78,7 +84,7 @@ namespace Ultralight.Tests
         [Test]
         public void RemovingTheLastClient_ShouldTriggerTheLastClientRemovedEvent()
         {
-            var q = new StompQueue(string.Empty);
+            var q = GetStompQueue(string.Empty);
             var mockClient = new MockClient();
             q.AddClient(mockClient, string.Empty);
 
@@ -95,7 +101,7 @@ namespace Ultralight.Tests
         [Test]
         public void WhenAClientDisconnects_ItShouldBeRemovedFromTheQueue()
         {
-            var q = new StompQueue("/queue/test");
+            var q = GetStompQueue("/queue/test");
             var mockClient = new MockClient();
 
             q.AddClient(mockClient, string.Empty);

@@ -17,31 +17,28 @@ namespace Ultralight.Listeners
     using Fleck;
 
     /// <summary>
-    /// Wraps a client connecting over websockets
+    ///   Wraps a client connecting over websockets
     /// </summary>
-    public class StompWsClient : IStompClient
+    public class StompWebsocketClient
+        : IStompClient
     {
         private readonly IWebSocketConnection _socket;
         private readonly StompMessageSerializer _messageSerializer = new StompMessageSerializer();
 
         /// <summary>
-        ///   Initializes a new instance of the <see cref = "StompWsClient" /> class.
+        ///   Initializes a new instance of the <see cref = "StompWebsocketClient" /> class.
         /// </summary>
         /// <param name = "socket">The socket.</param>
-        public StompWsClient(IWebSocketConnection socket)
+        public StompWebsocketClient(IWebSocketConnection socket)
         {
             if (socket == null) throw new ArgumentNullException("socket");
             _socket = socket;
 
-            socket.OnClose = () =>
-                                 {
-                                     if (OnClose != null) OnClose();
-                                 };
-            
+            socket.OnClose =
+                () => { if (OnClose != null) OnClose(); };
+
             socket.OnMessage = message => OnMessage(_messageSerializer.Deserialize(message));
         }
-
-        #region IStompClient Members
 
         /// <summary>
         ///   Client ID
@@ -68,13 +65,34 @@ namespace Ultralight.Listeners
         }
 
         /// <summary>
-        /// Closes this instance.
+        ///   Closes this instance.
         /// </summary>
         public void Close()
         {
             _socket.Close();
         }
 
-        #endregion
+        public int CompareTo(IStompClient other)
+        {
+            return SessionId.CompareTo(other.SessionId);
+        }
+
+        public bool Equals(StompWebsocketClient other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            return ReferenceEquals(this, other) || other.SessionId.Equals(SessionId);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            return obj.GetType() == typeof (StompWebsocketClient) && Equals((StompWebsocketClient) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return SessionId.GetHashCode();
+        }
     }
 }

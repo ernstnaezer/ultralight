@@ -14,6 +14,7 @@
 namespace Ultralight
 {
     using System;
+    using Listeners;
 
     public static class StompClientExtensionMethods
     {

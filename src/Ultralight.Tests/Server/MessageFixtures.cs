@@ -11,7 +11,7 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the 
 // specific language governing permissions and limitations under the License.
 
-namespace Ultralight.Tests
+namespace Ultralight.Tests.Server
 {
     using System.Collections.Generic;
     using System.Linq;
@@ -42,9 +42,11 @@ namespace Ultralight.Tests
             var queue = _server.Queues.First();
 
             Assert.IsEmpty(queue.Clients,"clients should be empty");
-            Assert.IsNotEmpty(queue.QueuedMessages, "queue should not be empty");
+            Assert.IsTrue(queue.Store.HasMessages(), "queue should not be empty");
 
-            Assert.AreEqual(queue.QueuedMessages.First(), "hi there");
+            string message;
+            Assert.IsTrue(queue.Store.TryDequeue(out message));
+            Assert.AreEqual(message, "hi there");
         }
 
         [Test]
