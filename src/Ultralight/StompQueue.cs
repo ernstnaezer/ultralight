@@ -126,7 +126,7 @@ namespace Ultralight
                 if (meta.OnCloseHandler != null) client.OnClose -= meta.OnCloseHandler;
 
             // raise the last client removed event if needed
-            if (_clients.Count() == 0 && OnLastClientRemoved != null)
+            if (!_clients.Any() && OnLastClientRemoved != null)
                 OnLastClientRemoved(this);
         }
 
@@ -136,8 +136,11 @@ namespace Ultralight
         /// <param name = "message">The message.</param>
         public void Publish(string message)
         {
+            Log.Info(string.Format("Publishing message to queue {0}", Address));
+
             if (_clients.IsEmpty)
             {
+                Log.Info("No clients connected, storing message");
                 Store.Enqueue(message);
                 return;
             }
@@ -154,6 +157,7 @@ namespace Ultralight
         private void SendMessage(IStompClient client, string body, Guid messageId, string subscriptionId)
         {
             Log.Info(string.Format("Sending message to {0}", client.SessionId));
+            Log.Debug(string.Format("message {0}", body));
 
             var stompMessage = new StompMessage("MESSAGE", body);
             stompMessage["message-id"] = messageId.ToString();
