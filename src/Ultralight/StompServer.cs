@@ -105,6 +105,11 @@ namespace Ultralight
         {
             if ( message == null || message.Command == null) return;
 
+            if(client.SessionId == Guid.Empty)
+            {
+                client.SessionId= Guid.NewGuid();
+            }
+
             Log.Info(string.Format("Processing command: {0} from client {1}", message.Command, client.SessionId));
             
             if (!_actions.ContainsKey(message.Command))
@@ -139,7 +144,6 @@ namespace Ultralight
         {
             var result = new StompMessage("CONNECTED");
 
-            client.SessionId = Guid.NewGuid();
             result["session-id"] = client.SessionId.ToString();
 
             client.Send(result);
