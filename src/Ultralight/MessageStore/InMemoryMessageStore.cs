@@ -14,6 +14,7 @@
 namespace Ultralight.MessageStore
 {
     using System.Collections.Concurrent;
+    using System.Linq;
 
     public class InMemoryMessageStore
         : IMessageStore
@@ -48,6 +49,27 @@ namespace Ultralight.MessageStore
         public bool HasMessages()
         {
             return !_messages.IsEmpty;
+        }
+
+        /// <summary>
+        /// Counts the messages.
+        /// </summary>
+        /// <returns></returns>
+        public int CountMessages()
+        {
+            return _messages.Count;
+        }
+
+        /// <summary>
+        /// Tries to peek the first message.
+        /// </summary>
+        /// <param name="messages">The messages.</param>
+        /// <param name="numberOfMessages">The number of messages.</param>
+        /// <returns></returns>
+        public bool TryPeek(out string[] messages, int numberOfMessages)
+        {
+            messages = _messages.ToArray().Take(numberOfMessages).ToArray();
+            return true;
         }
     }
 }

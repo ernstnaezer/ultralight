@@ -15,8 +15,39 @@ namespace Ultralight.MessageStore
 {
     public interface IMessageStore
     {
+        /// <summary>
+        /// Enqueues the specified message.
+        /// </summary>
+        /// <param name="message">The message.</param>
         void Enqueue(string message);
+
+        /// <summary>
+        /// Tries to dequeue a message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns></returns>
         bool TryDequeue(out string message);
+
+        /// <summary>
+        /// Determines whether this instance has messages.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance has messages; otherwise, <c>false</c>.
+        /// </returns>
         bool HasMessages();
+
+        /// <summary>
+        /// Counts the messages.
+        /// </summary>
+        /// <returns></returns>
+        int CountMessages();
+
+        /// <summary>
+        /// Tries to peek the first message.
+        /// </summary>
+        /// <param name="messages">The messages.</param>
+        /// <param name="numberOfMessages">The number of messages.</param>
+        /// <returns></returns>
+        bool TryPeek(out string[] messages, int numberOfMessages);
     }
 }

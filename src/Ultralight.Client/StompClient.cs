@@ -26,7 +26,6 @@ namespace Ultralight.Client
         private readonly IDictionary<string, Action<StompMessage>> _messageConsumers;
         private readonly Queue<Action> _commandQueue = new Queue<Action>();
         private readonly StompMessageSerializer _serializer = new StompMessageSerializer();
-
         private readonly ITransport _transport;
 
         /// <summary>
