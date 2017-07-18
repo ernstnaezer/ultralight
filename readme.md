@@ -1,3 +1,5 @@
+![stability-deprecated](https://img.shields.io/badge/stability-deprecated-red.svg)
+
 Ultralight
 ==========
 Ultralight is a small and fast, but partial, STOMP 1.0 message broker and client written in C#. 
